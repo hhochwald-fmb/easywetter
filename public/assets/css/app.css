@@ -361,3 +361,53 @@ details.pop > .pop-body { position: absolute; right: 0; top: calc(100% + 6px); z
 .w-forecast .fc-why summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 .w-forecast .fc-why p { margin: 8px 0 0; color: var(--d-muted); line-height: 1.5; }
 .w-forecast .w-foot { align-items: center; flex-wrap: wrap; }
+
+/* „?“-Knopf im Prognose-Baustein */
+.w-forecast { padding-right: 52px; }
+.fc-help {
+  position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%;
+  border: 1.5px solid var(--d-border); background: var(--d-card); color: var(--accent);
+  font: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; line-height: 1;
+  display: grid; place-items: center; transition: transform .15s, border-color .15s;
+}
+.fc-help:hover { transform: scale(1.08); border-color: var(--accent); }
+.fc-help:focus-visible { outline: 3px solid rgba(79, 70, 229, .35); outline-offset: 2px; }
+@media (max-width: 560px) { .w-forecast { padding-right: 18px; } .w-forecast .fc-main { padding-right: 36px; } }
+
+/* Erklär-Fenster */
+dialog.explain {
+  width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 0;
+  border-radius: 18px; box-shadow: var(--shadow-lg); color: var(--text); background: var(--surface);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+dialog.explain:not([open]) { display: none; }
+dialog.explain::backdrop { background: rgba(15, 23, 42, .55); backdrop-filter: blur(2px); }
+.explain-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--border); }
+.explain-head h2 { margin: 2px 0 0; font-size: 1.3rem; }
+.explain-kicker { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--primary); }
+.explain-body { padding: 18px 22px 24px; overflow-y: auto; }
+.explain-body h3 { font-size: 1rem; margin: 22px 0 10px; }
+.explain-intro { color: var(--muted); }
+.explain-result { border-left: 4px solid; background: var(--surface-2); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+.explain-result strong { font-size: 1.1rem; }
+.explain-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); display: block; margin-bottom: 3px; }
+.explain-data { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; font-size: .92rem; }
+.explain-data dt { color: var(--muted); }
+.explain-data dd { margin: 0; font-weight: 600; }
+.explain-steps { counter-reset: st; list-style: none; padding: 0; margin: 0; }
+.explain-steps > li { position: relative; padding: 0 0 18px 44px; }
+.explain-steps > li::before { counter-increment: st; content: counter(st); position: absolute; left: 0; top: -2px; width: 30px; height: 30px; border-radius: 50%; background: var(--primary-50); color: var(--primary); font-weight: 800; display: grid; place-items: center; }
+.explain-steps > li:not(:last-child)::after { content: ''; position: absolute; left: 14px; top: 32px; bottom: 4px; width: 2px; background: var(--border); }
+.explain-steps h4 { margin: 2px 0 6px; font-size: .98rem; }
+.explain-steps p { margin: 0 0 8px; font-size: .92rem; line-height: 1.55; }
+.explain-formula, .explain-calc { border-radius: 10px; padding: 10px 14px; margin: 0 0 8px; overflow-x: auto; }
+.explain-formula { background: #0f172a; color: #e2e8f0; }
+.explain-formula .explain-label { color: #94a3b8; }
+.explain-calc { background: var(--primary-50); }
+.explain-formula code, .explain-calc code { background: none; padding: 0; font-size: .92rem; white-space: pre-wrap; word-break: break-word; }
+.explain-table { font-size: .85rem; margin-top: 4px; }
+.explain-table td, .explain-table th { padding: 6px 10px; }
+.explain-table tr.hi td { background: var(--primary-50); font-weight: 700; color: var(--primary); }
+.explain-limits { margin: 0; padding-left: 20px; font-size: .9rem; color: var(--muted); }
+.explain-limits li { margin: 4px 0; }
+.explain-basis { margin-top: 18px; font-size: .8rem; color: var(--muted); }

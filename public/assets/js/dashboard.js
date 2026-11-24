@@ -355,10 +355,14 @@
       series: series, now: now, altitude: w.altitude, horizon: w.horizon,
       temp: latest.temp ? latest.temp.v : null,
       latestT: latest[w.sensor] || null, latestH: latest[w.sensor2] || null,
-      label: preset(w.sensor).label, unit: w.unit, decimals: w.decimals
+      label: preset(w.sensor).label, unit: w.unit, decimals: w.decimals,
+      sensor: w.sensor, sensor2: w.sensor2
     });
     var model = (F.MODELS[w.model] || F.MODELS.pressure).name;
     card.classList.add('w-forecast');
+    var help = el('button', { type: 'button', class: 'fc-help', title: 'Genau erklärt: Grundlage, Rechenweg und Formeln', 'aria-label': 'Erklärung der Prognose öffnen', text: '?' });
+    help.addEventListener('click', function () { openExplain(w.label || 'Prognose', model, r, w.color); });
+    card.appendChild(help);
     card.appendChild(el('div', { class: 'fc-main' }, [
       el('span', { class: 'fc-icon', style: { color: w.color, background: hexA(w.color, 0.12) } }, [iconEl(r.icon)]),
       el('div', null, [
@@ -384,6 +388,77 @@
     ]));
     return card;
   };
+
+  /** Erklär-Fenster mit Grundlage, Rechenweg, Formeln und Grenzen eines Prognose-Modells. */
+  function openExplain(title, modelName, r, color) {
+    var ex = r.explain || {};
+    var dlg = document.getElementById('ew-explain');
+    if (!dlg) {
+      dlg = el('dialog', { id: 'ew-explain', class: 'explain', 'aria-labelledby': 'ew-explain-title' });
+      // Klick auf den abgedunkelten Hintergrund schließt das Fenster
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+      document.body.appendChild(dlg);
+    }
+    var close = el('button', { type: 'button', class: 'btn btn-ghost btn-icon explain-close', 'aria-label': 'Schließen' }, [iconEl('x', 'icon')]);
+    close.addEventListener('click', function () { dlg.close(); });
+
+    var body = el('div', { class: 'explain-body' });
+    body.appendChild(el('p', { class: 'explain-intro', text: ex.intro || '' }));
+
+    body.appendChild(el('div', { class: 'explain-result', style: { 'border-color': color } }, [
+      el('span', { class: 'explain-label', text: 'Ergebnis' }),
+      el('strong', { text: r.title })
+    ]));
+
+    if (ex.data && ex.data.length) {
+      body.appendChild(el('h3', { text: 'Grundlage: diese Messwerte werden verwendet' }));
+      var dl = el('dl', { class: 'explain-data' });
+      ex.data.forEach(function (d) { dl.appendChild(el('dt', { text: d[0] })); dl.appendChild(el('dd', { text: d[1] })); });
+      body.appendChild(dl);
+    }
+
+    if (ex.steps && ex.steps.length) {
+      body.appendChild(el('h3', { text: 'So wird gerechnet' }));
+      var ol = el('ol', { class: 'explain-steps' });
+      ex.steps.forEach(function (st) {
+        var li = el('li', null, [el('h4', { text: st.title })]);
+        if (st.text) li.appendChild(el('p', { text: st.text }));
+        if (st.formula) li.appendChild(el('div', { class: 'explain-formula' }, [el('span', { class: 'explain-label', text: 'Formel' }), el('code', { text: st.formula })]));
+        if (st.calc) li.appendChild(el('div', { class: 'explain-calc' }, [el('span', { class: 'explain-label', text: 'Mit euren Werten' }), el('code', { text: st.calc })]));
+        if (st.table) {
+          var tbl = el('table', { class: 'table explain-table' });
+          tbl.appendChild(el('tr', null, st.table.head.map(function (h) { return el('th', { text: h }); })));
+          st.table.rows.forEach(function (row, i) {
+            tbl.appendChild(el('tr', { class: i === st.table.hi ? 'hi' : '' }, row.map(function (c) { return el('td', { text: c }); })));
+          });
+          li.appendChild(el('div', { class: 'table-wrap' }, [tbl]));
+        }
+        ol.appendChild(li);
+      });
+      body.appendChild(ol);
+    }
+
+    if (ex.limits && ex.limits.length) {
+      body.appendChild(el('h3', { text: 'Grenzen des Modells' }));
+      body.appendChild(el('ul', { class: 'explain-limits' }, ex.limits.map(function (l) { return el('li', { text: l }); })));
+    }
+    if (r.basis) body.appendChild(el('p', { class: 'explain-basis', text: r.basis + ' · Datenlage: ' + r.quality }));
+
+    dlg.replaceChildren(
+      el('div', { class: 'explain-head' }, [
+        el('div', null, [el('div', { class: 'explain-kicker', text: 'Prognose-Modell: ' + modelName }), el('h2', { id: 'ew-explain-title', text: title })]),
+        close
+      ]),
+      body
+    );
+    if (window.lucide) window.lucide.createIcons();
+    if (typeof dlg.showModal === 'function') {
+      if (!dlg.open) dlg.showModal();
+    } else {
+      dlg.setAttribute('open', '');
+    }
+    body.scrollTop = 0;
+  }
 
   Renderer.prototype.chart = function (canvas, w, series) {
     if (!canvas.isConnected) return;

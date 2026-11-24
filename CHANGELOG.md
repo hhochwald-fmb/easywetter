@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.4
+- Prognose-Bausteine haben einen „?“-Knopf: Er öffnet eine genaue Erklärung mit
+  - Grundlage (welche Messwerte aus welchem Zeitraum),
+  - Rechenweg Schritt für Schritt mit Formeln und den eingesetzten aktuellen Messwerten,
+  - Einordnungstabelle mit markierter zutreffender Zeile,
+  - Grenzen des Modells
+- Negative Zahlen in Rechnungen korrekt mit Klammern und echtem Minuszeichen
+
 ## 2.0.3
 - Neuer Dashboard-Baustein „Prognose“ mit vier Modellen, die nur mit den eigenen Messwerten rechnen:
   - **Drucktendenz** – Barometer-Regel über die Luftdruckänderung der letzten 3 Stunden (Ausgleichsgerade statt zwei Messpunkte)
