@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.3
+- Neuer Dashboard-Baustein „Prognose“ mit vier Modellen, die nur mit den eigenen Messwerten rechnen:
+  - **Drucktendenz** – Barometer-Regel über die Luftdruckänderung der letzten 3 Stunden (Ausgleichsgerade statt zwei Messpunkte)
+  - **Zambretti** – historisches Verfahren (1915): Druck auf Meereshöhe + Tendenz + Jahreszeit → 26 Wettertexte
+  - **Trend-Hochrechnung** – lineare Regression für jeden beliebigen Messwert, mit Bestimmtheitsmaß R²
+  - **Nebel & Frost** – Taupunkt nach der Magnus-Formel, Nebel-/Tau-/Reifgefahr und Wolkenuntergrenze
+- Jede Prognose erklärt unter „Warum?“, wie sie berechnet wurde, und zeigt die Datenlage
+- Höhe der Station einstellbar (Umrechnung des Luftdrucks auf Meereshöhe)
+- Automatische Ansicht zeigt eine Drucktendenz-Prognose, sobald Luftdruck gemessen wird
+
 ## 2.0.2
 - E-Mail-Benachrichtigungen komplett im Admin einstellbar (Empfänger + Absender), kein Bearbeiten der config.php mehr nötig
 - Knopf „Test-E-Mail senden“ und klare Statusanzeige, ob E-Mails aktiv sind

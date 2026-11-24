@@ -347,3 +347,17 @@ details.pop > .pop-body { position: absolute; right: 0; top: calc(100% + 6px); z
   .secret { border-color: #000; background: #fff; }
 }
 .legal h2 { margin-top: 1.4em; font-size: 1.1rem; }
+
+/* Prognose-Baustein */
+.w-forecast .fc-main { display: flex; gap: 14px; align-items: center; margin: 8px 0 12px; }
+.w-forecast .fc-icon { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; flex-shrink: 0; }
+.w-forecast .fc-icon svg { width: 32px; height: 32px; }
+.w-forecast .fc-title { font-size: 1.35rem; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; }
+.w-forecast .fc-model { font-size: .75rem; color: var(--d-muted); font-weight: 600; }
+.w-forecast .fc-details { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 0 0 10px; font-size: .88rem; }
+.w-forecast .fc-details dt { color: var(--d-muted); }
+.w-forecast .fc-details dd { margin: 0; font-weight: 600; }
+.w-forecast .fc-why { font-size: .85rem; border-top: 1px solid var(--d-border); padding-top: 8px; }
+.w-forecast .fc-why summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.w-forecast .fc-why p { margin: 8px 0 0; color: var(--d-muted); line-height: 1.5; }
+.w-forecast .w-foot { align-items: center; flex-wrap: wrap; }

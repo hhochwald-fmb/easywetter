@@ -8,7 +8,8 @@ declare(strict_types=1);
 final class Dashboard
 {
     public const THEMES = ['hell', 'dunkel', 'ozean', 'sonnenuntergang', 'wald', 'weltraum'];
-    public const TYPES = ['value', 'gauge', 'chart', 'minmax', 'text', 'status'];
+    public const TYPES = ['value', 'gauge', 'chart', 'minmax', 'forecast', 'text', 'status'];
+    public const FORECAST_MODELS = ['pressure', 'zambretti', 'trend', 'dewpoint'];
     public const SIZES = ['s', 'm', 'l'];
     public const CHART_STYLES = ['line', 'area', 'bar'];
     /** Zeitraum => [Sekunden, Bucket-Größe in Sekunden] */
@@ -110,6 +111,10 @@ final class Dashboard
             if ($max <= $min) {
                 $max = $min + 1;
             }
+            $sensor2 = strtolower((string) ($w['sensor2'] ?? 'hum'));
+            if (!preg_match('/^[a-z0-9_]{1,32}$/', $sensor2)) {
+                $sensor2 = 'hum';
+            }
             $id = (string) ($w['id'] ?? '');
             $out['widgets'][] = [
                 'id' => preg_match('/^[a-z0-9]{1,16}$/', $id) ? $id : random_slug(8),
@@ -127,6 +132,10 @@ final class Dashboard
                 'size' => in_array($w['size'] ?? '', self::SIZES, true) ? $w['size'] : 's',
                 'style' => in_array($w['style'] ?? '', self::CHART_STYLES, true) ? $w['style'] : 'area',
                 'text' => mb_substr(str_replace("\r", '', (string) ($w['text'] ?? '')), 0, 600),
+                'model' => in_array($w['model'] ?? '', self::FORECAST_MODELS, true) ? $w['model'] : 'pressure',
+                'sensor2' => $sensor2,
+                'altitude' => (int) max(-500, min(9000, (int) self::num($w['altitude'] ?? 0, 0))),
+                'horizon' => in_array((int) ($w['horizon'] ?? 1), [1, 2, 3], true) ? (int) ($w['horizon'] ?? 1) : 1,
             ];
         }
         return $out;

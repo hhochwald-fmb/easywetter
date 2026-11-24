@@ -24,8 +24,9 @@
     { id: 'wald', name: 'Wald', prev: 'linear-gradient(135deg,#dcfce7,#bef264)' },
     { id: 'weltraum', name: 'Weltraum', prev: 'linear-gradient(135deg,#020617,#312e81,#0e7490)' }
   ];
-  var TYPE_NAMES = { value: 'Wert', gauge: 'Zeiger', chart: 'Verlauf', minmax: 'Min / Max', text: 'Notiz', status: 'Stationen' };
-  var TYPE_ICONS = { value: 'hash', gauge: 'gauge', chart: 'chart-line', minmax: 'arrow-up-down', text: 'sticky-note', status: 'radio-tower' };
+  var TYPE_NAMES = { value: 'Wert', gauge: 'Zeiger', chart: 'Verlauf', minmax: 'Min / Max', forecast: 'Prognose', text: 'Notiz', status: 'Stationen' };
+  var TYPE_ICONS = { value: 'hash', gauge: 'gauge', chart: 'chart-line', minmax: 'arrow-up-down', forecast: 'cloud-sun-rain', text: 'sticky-note', status: 'radio-tower' };
+  var QUALITY_CLASS = { hoch: 'badge-success', mittel: 'badge-warn', gering: 'badge-danger' };
   var RANGE_NAMES = { '6h': '6 Stunden', '24h': '24 Stunden', '7d': '7 Tage', '30d': '30 Tage' };
   var ONLINE_SECONDS = 900;
 
@@ -81,8 +82,8 @@
     return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + a + ')';
   }
 
-  function seriesKey(w) { return w.station + ':' + w.sensor + ':' + w.range; }
-  function needsSeries(w) { return w.type === 'chart' || w.type === 'minmax'; }
+  function seriesKey(w) { return w.station + ':' + w.sensor + ':' + (w.type === 'forecast' ? '6h' : w.range); }
+  function needsSeries(w) { return w.type === 'chart' || w.type === 'minmax' || (w.type === 'forecast' && w.model !== 'dewpoint'); }
 
   function requiredSeries(widgets) {
     var keys = [];
@@ -96,6 +97,14 @@
   }
 
   function makeWidget(type, station, sensor) {
+    if (type === 'forecast') {
+      return {
+        id: Math.random().toString(36).slice(2, 10), type: 'forecast', station: station || 0,
+        model: 'pressure', sensor: 'press', sensor2: 'hum', altitude: 0, horizon: 1,
+        label: 'Wetterprognose', unit: 'hPa', color: '#6366f1', icon: 'cloud-sun',
+        min: 0, max: 100, decimals: 1, range: '6h', size: 'm', style: 'area', text: ''
+      };
+    }
     var p = preset(sensor);
     return {
       id: Math.random().toString(36).slice(2, 10),
@@ -123,6 +132,8 @@
       c.size = 'l';
       out.push(c);
     }
+    var withPress = stations.find(function (s) { return s.latest && s.latest.press; });
+    if (withPress) out.push(makeWidget('forecast', withPress.id));
     return out;
   }
 
@@ -298,6 +309,10 @@
 
     var series = (data.series || {})[seriesKey(w)] || [];
 
+    if (w.type === 'forecast') {
+      return this.forecast(card, w, st, series, now);
+    }
+
     if (w.type === 'minmax') {
       var mn = null, mx = null, sum = 0;
       series.forEach(function (p) {
@@ -329,6 +344,44 @@
     box.appendChild(canvas);
     // Chart erst nach dem Einhängen ins DOM erzeugen
     setTimeout(function () { self.chart(canvas, w, series); }, 0);
+    return card;
+  };
+
+  Renderer.prototype.forecast = function (card, w, st, series, now) {
+    var F = window.EWForecast;
+    if (!F) return card;
+    var latest = st.latest || {};
+    var r = F.run(w.model, {
+      series: series, now: now, altitude: w.altitude, horizon: w.horizon,
+      temp: latest.temp ? latest.temp.v : null,
+      latestT: latest[w.sensor] || null, latestH: latest[w.sensor2] || null,
+      label: preset(w.sensor).label, unit: w.unit, decimals: w.decimals
+    });
+    var model = (F.MODELS[w.model] || F.MODELS.pressure).name;
+    card.classList.add('w-forecast');
+    card.appendChild(el('div', { class: 'fc-main' }, [
+      el('span', { class: 'fc-icon', style: { color: w.color, background: hexA(w.color, 0.12) } }, [iconEl(r.icon)]),
+      el('div', null, [
+        el('div', { class: 'fc-title', text: r.title }),
+        el('span', { class: 'fc-model', text: 'Modell: ' + model })
+      ])
+    ]));
+    if (r.details.length) {
+      var dl = el('dl', { class: 'fc-details' });
+      r.details.forEach(function (d) {
+        dl.appendChild(el('dt', { text: d[0] }));
+        dl.appendChild(el('dd', { text: d[1] }));
+      });
+      card.appendChild(dl);
+    }
+    card.appendChild(el('details', { class: 'fc-why' }, [
+      el('summary', { text: 'Warum? So wird gerechnet' }),
+      el('p', { text: r.why })
+    ]));
+    card.appendChild(el('div', { class: 'w-foot' }, [
+      el('span', { text: r.basis || ' ' }),
+      el('span', { class: 'badge ' + (QUALITY_CLASS[r.quality] || ''), text: 'Datenlage: ' + r.quality })
+    ]));
     return card;
   };
 

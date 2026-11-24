@@ -149,6 +149,10 @@
     var st = stationById(w.station);
     var base = w.label || D.preset(w.sensor).label;
     if (w.type === 'text' || w.type === 'status') return base || D.TYPE_NAMES[w.type];
+    if (w.type === 'forecast') {
+      var m = window.EWForecast && window.EWForecast.MODELS[w.model];
+      return (w.label || 'Prognose') + (m ? ' · ' + m.name : '');
+    }
     return base + (st && data.stations.length > 1 ? ' · ' + st.name : '');
   }
 
@@ -188,10 +192,21 @@
     };
 
     body.appendChild(field('Baustein-Art', select(Object.keys(D.TYPE_NAMES).map(function (t) { return [t, D.TYPE_NAMES[t]]; }), w.type, function (v) {
+      if (v === 'forecast') {
+        var f = D.makeWidget('forecast', w.station);
+        f.id = w.id;
+        Object.keys(f).forEach(function (k) { w[k] = f[k]; });
+      }
       w.type = v;
-      if (v === 'chart' && w.size === 's') w.size = 'm';
+      if ((v === 'chart' || v === 'forecast') && w.size === 's') w.size = 'm';
       changed(true);
     })));
+
+    if (w.type === 'forecast') {
+      buildForecastFields(body, w, upd, titleSpan);
+      item.appendChild(body);
+      return item;
+    }
 
     if (w.type !== 'text' && w.type !== 'status') {
       var grid = el('div', { class: 'form-grid' });
@@ -255,6 +270,68 @@
     }
     item.appendChild(body);
     return item;
+  }
+
+  function sensorOptions(stationId, current) {
+    var keys = knownSensors(stationId);
+    if (keys.indexOf(current) < 0) keys.unshift(current);
+    var s = stationById(stationId);
+    return keys.map(function (k) {
+      var p = D.PRESETS[k];
+      var has = s && s.latest && s.latest[k];
+      return [k, (p ? p.label + ' (' + k + ')' : k) + (has ? ' ✓' : '')];
+    });
+  }
+
+  function buildForecastFields(body, w, upd, titleSpan) {
+    var F = window.EWForecast;
+    var models = F ? F.MODELS : { pressure: { name: 'Drucktendenz', needs: 'Luftdruck' } };
+    body.appendChild(field('Prognose-Modell', select(Object.keys(models).map(function (m) {
+      return [m, models[m].name + ' – braucht: ' + models[m].needs];
+    }), w.model, function (v) {
+      w.model = v;
+      if (v === 'pressure' || v === 'zambretti') { w.sensor = 'press'; w.unit = 'hPa'; }
+      if (v === 'dewpoint') { w.sensor = 'temp'; w.sensor2 = 'hum'; }
+      if (v === 'trend') { w.sensor = 'temp'; w.unit = '°C'; w.decimals = 1; }
+      changed(true);
+    }), {
+      pressure: 'Steigt oder fällt der Luftdruck in den letzten 3 Stunden? Die klassische Barometer-Regel.',
+      zambretti: 'Historisches Verfahren (1915): Luftdruck + Tendenz + Jahreszeit → einer von 26 Wettertexten.',
+      trend: 'Legt eine Gerade durch die letzten Messwerte (lineare Regression) und rechnet sie in die Zukunft weiter.',
+      dewpoint: 'Berechnet den Taupunkt (Magnus-Formel) und daraus Nebel-, Tau- und Frostgefahr.'
+    }[w.model]));
+
+    var grid = el('div', { class: 'form-grid' });
+    if (data.stations.length) {
+      grid.appendChild(field('Station', select(data.stations.map(function (s) { return [s.id, s.name]; }), w.station, function (v) { w.station = parseInt(v, 10); changed(true); })));
+    }
+    var sensorLabel = { pressure: 'Luftdruck-Messwert', zambretti: 'Luftdruck-Messwert', trend: 'Welcher Messwert?', dewpoint: 'Temperatur-Messwert' }[w.model];
+    grid.appendChild(field(sensorLabel, select(sensorOptions(w.station, w.sensor), w.sensor, function (v) {
+      w.sensor = v;
+      if (w.model === 'trend') { var p = D.preset(v); w.unit = p.unit; }
+      changed(true);
+    })));
+    if (w.model === 'dewpoint') {
+      grid.appendChild(field('Luftfeuchte-Messwert', select(sensorOptions(w.station, w.sensor2), w.sensor2, function (v) { w.sensor2 = v; changed(true); })));
+    }
+    body.appendChild(grid);
+
+    if (w.model === 'pressure' || w.model === 'zambretti') {
+      body.appendChild(field('Höhe der Station über dem Meer (m)', numInput(w.altitude, function (v) { w.altitude = Math.round(v); changed(); }),
+        'Wichtig für Zambretti: Der Druck wird damit auf Meereshöhe umgerechnet. Stuttgart ca. 250 m, Schwäbische Alb ca. 700 m – genau: Höhe in einer Karten-App nachschauen.'));
+    }
+    if (w.model === 'trend') {
+      body.appendChild(el('div', { class: 'form-grid' }, [
+        field('Hochrechnen um', select([[1, '1 Stunde'], [2, '2 Stunden'], [3, '3 Stunden']], w.horizon, function (v) { w.horizon = parseInt(v, 10); changed(); })),
+        field('Einheit', textInput(w.unit, function (v) { w.unit = v; changed(); }, { maxlength: 12 }))
+      ]));
+    }
+
+    body.appendChild(el('div', { class: 'form-grid' }, [
+      field('Überschrift', textInput(w.label, function (v) { w.label = v; titleSpan.textContent = widgetTitle(w); changed(); }, { maxlength: 40 })),
+      field('Größe', select([['s', 'Klein'], ['m', 'Mittel (2 Spalten)'], ['l', 'Ganze Breite']], w.size, upd('size'))),
+      field('Farbe', colorInput(w.color, upd('color')))
+    ]));
   }
 
   function btn(icon, title, disabled, fn) {

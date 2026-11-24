@@ -6,7 +6,7 @@ $gid = (int) $group['id'];
 <?php if ($public): ?>
     <div class="dash dash-page" id="dash" data-theme="<?= e($cfg['theme']) ?>" data-url="<?= e($dataUrl) ?>" data-public="1" data-home-url="<?= e(url('/')) ?>"></div>
     <script type="application/json" id="dash-config"><?= $json ?></script>
-    <?php $scripts = ['vendor/chart.min.js', 'js/dashboard.js']; ?>
+    <?php $scripts = ['vendor/chart.min.js', 'js/forecast.js', 'js/dashboard.js']; ?>
 <?php else: ?>
     <?php $active = 'dashboard'; require __DIR__ . '/../partials/group_tabs.php'; ?>
     <?php require __DIR__ . '/../partials/credentials.php'; ?>
@@ -41,5 +41,5 @@ $gid = (int) $group['id'];
 
     <div class="dash" id="dash" data-theme="<?= e($cfg['theme']) ?>" data-url="<?= e($dataUrl) ?>" data-stations-url="<?= e(url("/gruppen/$gid/stationen")) ?>" data-designer-url="<?= e(url("/gruppen/$gid/gestalten")) ?>"></div>
     <script type="application/json" id="dash-config"><?= $json ?></script>
-    <?php $scripts = ['vendor/chart.min.js', 'js/dashboard.js']; ?>
+    <?php $scripts = ['vendor/chart.min.js', 'js/forecast.js', 'js/dashboard.js']; ?>
 <?php endif; ?>
