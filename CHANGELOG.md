@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.2
+- E-Mail-Benachrichtigungen komplett im Admin einstellbar (Empfänger + Absender), kein Bearbeiten der config.php mehr nötig
+- Knopf „Test-E-Mail senden“ und klare Statusanzeige, ob E-Mails aktiv sind
+- Hinweis in der Admin-Übersicht, solange keine Benachrichtigungen eingerichtet sind
+- Einstellungen im Admin haben Vorrang vor config.php
+
 ## 2.0.1
 - Einrichtungsassistent: verständliche Hinweise bei Datenbankfehlern (falscher Name, Passwort, Server)
 - Hinweisseite, falls die Weiterleitung nach public/ fehlt (.htaccess nicht hochgeladen)

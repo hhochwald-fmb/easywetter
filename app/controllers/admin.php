@@ -162,8 +162,10 @@ function admin_system(): never
         'latest' => unstash('latest'),
         'backups' => Updater::backups(),
         'registrationOpen' => registration_open(),
-        'adminEmail' => (string) config('admin_email', '') ?: (string) setting('admin_email', ''),
-        'mailEnabled' => Mailer::enabled(),
+        'adminEmail' => Mailer::adminRecipient(),
+        'mailFrom' => Mailer::from(),
+        'mailProblem' => Mailer::problem(),
+        'serverHost' => preg_replace('/:\d+$/', '', (string) parse_url(absolute_url('/'), PHP_URL_HOST)),
         'readings' => (int) Db::value('SELECT COUNT(*) FROM readings'),
         'retention' => (int) config('retention_days', 365),
         'imprint' => (string) setting('imprint_text', ''),
@@ -181,6 +183,12 @@ function admin_settings_save(): never
         redirect('/admin/system');
     }
     set_setting('admin_email', $email);
+    $from = post('mail_from');
+    if ($from !== '' && !filter_var($from, FILTER_VALIDATE_EMAIL)) {
+        flash('error', 'Die Absenderadresse ist ungültig.');
+        redirect('/admin/system');
+    }
+    set_setting('mail_from', $from);
     $repo = post('update_repo');
     if ($repo !== '' && !preg_match('#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $repo)) {
         flash('error', 'Repository bitte im Format „besitzer/name“ angeben.');
@@ -188,6 +196,21 @@ function admin_settings_save(): never
     }
     set_setting('update_repo', $repo);
     flash('success', 'Einstellungen gespeichert.');
+    redirect('/admin/system');
+}
+
+function admin_test_mail(): never
+{
+    $u = Auth::require('admin');
+    $to = Mailer::adminRecipient() ?: (string) ($u['email'] ?? '');
+    if (Mailer::from() === '' || $to === '') {
+        flash('error', 'Bitte zuerst Absender- und Empfängeradresse eintragen und speichern.');
+        redirect('/admin/system');
+    }
+    $ok = Mailer::send($to, 'EasyWetter: Test-E-Mail', "Hallo,\n\ndiese Test-E-Mail zeigt: Der E-Mail-Versand von EasyWetter funktioniert.\n\nAb jetzt bekommst du eine Nachricht, wenn sich eine Schule registriert.\n\n" . absolute_url('admin') . "\n");
+    flash($ok ? 'success' : 'error', $ok
+        ? "Test-E-Mail an $to wurde abgeschickt. Kommt sie nicht an, bitte auch im Spam-Ordner nachsehen."
+        : 'Der Server hat den Versand abgelehnt. Prüfe, ob die Absenderadresse zu einer Domain deines Hosting-Pakets gehört.');
     redirect('/admin/system');
 }
 

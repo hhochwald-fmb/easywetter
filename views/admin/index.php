@@ -5,6 +5,10 @@
 
 <?php require __DIR__ . '/../partials/credentials.php'; ?>
 
+<?php if (Mailer::problem() && $registrationOpen): ?>
+    <div class="alert alert-info"><?= icon('mail') ?><div>Du bekommst noch keine E-Mail bei neuen Registrierungen. <a href="<?= e(url('/admin/system')) ?>">Jetzt unter „System &amp; Updates“ einrichten</a> (Absender + Empfänger).</div></div>
+<?php endif; ?>
+
 <div class="grid grid-4" style="margin-bottom:20px">
     <div class="card card-tight stat"><span class="num"><?= count($schools) ?></span><span class="lbl">Schulen</span></div>
     <div class="card card-tight stat"><span class="num"><?= (int) $stats['teachers'] ?></span><span class="lbl">Lehrkräfte</span></div>

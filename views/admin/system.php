@@ -51,12 +51,27 @@
             <?= csrf_field() ?>
             <h2><?= icon('settings') ?> Einstellungen</h2>
             <label class="check" style="margin-bottom:14px"><input type="checkbox" name="registration_open" value="1" <?= $registrationOpen ? 'checked' : '' ?>> Schulen dürfen sich selbst registrieren (mit Freigabe durch dich)</label>
-            <div class="field"><label>E-Mail für Benachrichtigungen</label><input type="email" name="admin_email" value="<?= e($adminEmail) ?>">
-                <span class="hint"><?= $mailEnabled ? 'E-Mail-Versand ist aktiv.' : 'E-Mail-Versand ist aus – dafür in config/config.php „mail_from“ setzen.' ?></span></div>
+            <h3 style="margin-top:6px"><?= icon('mail') ?> E-Mail-Benachrichtigungen</h3>
+            <?php if ($mailProblem): ?>
+                <div class="alert alert-warn"><?= icon('triangle-alert') ?><div><strong>E-Mails sind aus:</strong> <?= e($mailProblem) ?> Neue Registrierungen siehst du dann nur hier im Admin (rote Zahl bei „Übersicht“).</div></div>
+            <?php else: ?>
+                <div class="alert alert-success"><?= icon('circle-check') ?><div>E-Mails sind aktiv: Du bekommst eine Nachricht bei jeder neuen Schul-Registrierung, freigegebene Lehrkräfte eine Bestätigung.</div></div>
+            <?php endif; ?>
+            <div class="field"><label>Deine E-Mail (Empfänger)</label><input type="email" name="admin_email" value="<?= e($adminEmail) ?>" placeholder="du@beispiel.de">
+                <span class="hint">Hierhin werden neue Registrierungen gemeldet.</span></div>
+            <div class="field"><label>Absenderadresse</label><input type="email" name="mail_from" value="<?= e($mailFrom) ?>" placeholder="noreply@<?= e($serverHost) ?>">
+                <span class="hint">Muss zu einer Domain deines Hosting-Pakets gehören (z. B. noreply@<?= e($serverHost) ?>), sonst landen Mails im Spam oder werden abgelehnt. Ein eigenes Postfach ist dafür meist nicht nötig.</span></div>
             <div class="field"><label>GitHub-Repository für Online-Updates</label><input type="text" name="update_repo" value="<?= e((string) setting('update_repo', '')) ?>" placeholder="<?= e(Updater::DEFAULT_REPO) ?>" <?= $repoFromConfig ? 'disabled' : '' ?>>
                 <span class="hint"><?= $repoFromConfig ? 'Wird in config/config.php festgelegt.' : 'Leer lassen = offizielles Repository (' . e(Updater::DEFAULT_REPO) . '). Nur ändern, wenn du eine eigene Variante pflegst.' ?></span></div>
             <button class="btn btn-primary">Speichern</button>
         </form>
+        <?php if (!$mailProblem): ?>
+        <form method="post" action="<?= e(url('/admin/system/testmail')) ?>" class="card card-tight row row-between">
+            <?= csrf_field() ?>
+            <span class="small">Funktioniert der Versand? Schick dir eine Test-E-Mail an <strong><?= e($adminEmail) ?></strong>.</span>
+            <button class="btn btn-sm"><?= icon('mail', 'icon icon-sm') ?> Test-E-Mail senden</button>
+        </form>
+        <?php endif; ?>
 
         <div class="card">
             <h2><?= icon('cpu') ?> Status</h2>

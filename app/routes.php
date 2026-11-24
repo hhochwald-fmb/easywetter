@@ -73,6 +73,7 @@ $routes = [
     ['GET', '/admin/system', 'admin_system'],
     ['POST', '/admin/system/einstellungen', 'admin_settings_save'],
     ['POST', '/admin/system/rechtliches', 'admin_legal_save'],
+    ['POST', '/admin/system/testmail', 'admin_test_mail'],
     ['POST', '/admin/system/migrieren', 'admin_migrate'],
     ['POST', '/admin/system/update-hochladen', 'admin_update_upload'],
     ['POST', '/admin/system/update-pruefen', 'admin_update_check'],
