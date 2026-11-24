@@ -65,14 +65,18 @@ final class Migrator
     {
         $rows = [];
         try {
-            $rows = Db::all("SELECT name, value FROM settings WHERE name IN ('app_version', 'installed')");
+            $rows = Db::all("SELECT name, value FROM settings WHERE name IN ('app_version', 'installed', 'last_migration')");
         } catch (PDOException $e) {
             // Tabellen existieren noch nicht -> Erstinstallation
         }
         $s = array_column($rows, 'value', 'name');
-        if (($s['app_version'] ?? null) !== EW_VERSION) {
+        $files = array_keys(self::files());
+        $latest = (string) end($files);
+        // Neue Version ODER neue Migrationsdatei -> ausstehende Migrationen ausführen
+        if (($s['app_version'] ?? null) !== EW_VERSION || ($s['last_migration'] ?? null) !== $latest) {
             self::run();
             set_setting('app_version', EW_VERSION);
+            set_setting('last_migration', $latest);
         }
         return ['installed' => ($s['installed'] ?? '0') === '1'];
     }

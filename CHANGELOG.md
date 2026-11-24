@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.5
+- Höhe über dem Meer ist jetzt eine Eigenschaft der Station (Stationen-Seite → Stift bzw. beim Anlegen) und gilt für alle Bausteine
+- Neue Option „Auf Meereshöhe umrechnen“ für Luftdruck in Wert, Zeiger, Verlauf und Min/Max – passend zum Wetterbericht (bei neuen Luftdruck-Bausteinen standardmäßig an)
+- Prognosen (Drucktendenz, Zambretti) verwenden automatisch die Stationshöhe; Hinweis, wenn sie fehlt
+- Stationen-Seite warnt, wenn Luftdruck gemessen wird, aber keine Höhe eingetragen ist
+- Datenbank-Migrationen werden auch ohne Versionssprung erkannt
+
 ## 2.0.4
 - Prognose-Bausteine haben einen „?“-Knopf: Er öffnet eine genaue Erklärung mit
   - Grundlage (welche Messwerte aus welchem Zeitraum),

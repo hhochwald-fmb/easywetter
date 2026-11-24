@@ -24,7 +24,12 @@ require __DIR__ . '/../partials/group_tabs.php';
             $ts = utc_to_ts($s['last_seen_at']);
             $online = $ts && time() - $ts < 900; ?>
         <tr>
-            <td><strong><?= e($s['name']) ?></strong><div class="small muted mono">Token: ew_…<?= e($s['token_hint']) ?></div></td>
+            <td><strong><?= e($s['name']) ?></strong>
+                <div class="small muted"><?= $s['altitude'] !== null ? icon('mountain', 'icon icon-sm') . ' ' . e((int) $s['altitude']) . ' m ü. NN' : '' ?></div>
+                <?php if ($s['altitude'] === null && isset(($latest[(int) $s['id']] ?? [])['press'])): ?>
+                    <div class="small" style="color:var(--warn)"><?= icon('triangle-alert', 'icon icon-sm') ?> Höhe fehlt – für Luftdruck auf Meereshöhe und Zambretti eintragen (Stift)</div>
+                <?php endif; ?>
+                <div class="small muted mono">Token: ew_…<?= e($s['token_hint']) ?></div></td>
             <td class="small">
                 <?php $l = $latest[(int) $s['id']] ?? []; if (!$l): ?><span class="muted">–</span><?php endif; ?>
                 <?php foreach ($l as $k => $v): ?><span class="badge" style="margin:1px"><span class="mono"><?= e($k) ?></span>&nbsp;<?= e(rtrim(rtrim(number_format($v['v'], 2, ',', ''), '0'), ',')) ?></span><?php endforeach; ?>
@@ -43,6 +48,8 @@ require __DIR__ . '/../partials/group_tabs.php';
                             <form method="post" action="<?= e(url('/stationen/' . $s['id'] . '/umbenennen')) ?>">
                                 <?= csrf_field() ?>
                                 <div class="field"><label>Name</label><input name="name" type="text" required maxlength="80" value="<?= e($s['name']) ?>"></div>
+                                <div class="field"><label>Höhe über dem Meer (m)</label><input name="altitude" type="number" min="-500" max="9000" step="1" placeholder="z. B. 250" value="<?= $s['altitude'] !== null ? (int) $s['altitude'] : '' ?>">
+                                    <span class="hint">Für die Umrechnung des Luftdrucks auf Meereshöhe (wie im Wetterbericht) und die Zambretti-Prognose. Nachschauen z. B. in einer Karten-App.</span></div>
                                 <button class="btn btn-primary btn-sm">Speichern</button>
                             </form>
                             <hr>
@@ -70,6 +77,8 @@ require __DIR__ . '/../partials/group_tabs.php';
         <form method="post" action="<?= e(url("/gruppen/$gid/stationen/neu")) ?>">
             <?= csrf_field() ?>
             <div class="field"><label for="name">Name der Station</label><input id="name" name="name" type="text" required maxlength="80" placeholder="z. B. Schulhof, Dach, Klassenzimmer"></div>
+            <div class="field"><label for="altitude">Höhe über dem Meer in m (optional)</label><input id="altitude" name="altitude" type="number" min="-500" max="9000" step="1" placeholder="z. B. 250">
+                <span class="hint">Wichtig, wenn ihr Luftdruck messt: Damit wird er auf Meereshöhe umgerechnet. Lässt sich später ändern.</span></div>
             <button class="btn btn-primary">Station anlegen</button>
         </form>
     </div>

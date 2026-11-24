@@ -230,6 +230,7 @@
         }
         var p = D.preset(v);
         w.sensor = v; w.label = p.label; w.unit = p.unit; w.icon = p.icon; w.color = p.color; w.min = p.min; w.max = p.max;
+        w.qnh = v === 'press';
         changed(true);
       }), '✓ = hat schon Daten gesendet. Fehlt ein Name? Er erscheint automatisch, sobald eure Station ihn zum ersten Mal sendet (z. B. add("bodentemp", …)).'));
       body.appendChild(grid);
@@ -245,6 +246,15 @@
       ta.value = w.text || '';
       ta.addEventListener('input', function () { w.text = ta.value; changed(); });
       body.appendChild(field('Text', ta));
+    }
+
+    if ((w.sensor === 'press' || w.unit === 'hPa') && ['value', 'gauge', 'chart', 'minmax'].indexOf(w.type) >= 0) {
+      var cb = el('input', { type: 'checkbox' });
+      cb.checked = !!w.qnh;
+      cb.addEventListener('change', function () { w.qnh = cb.checked; changed(true); });
+      body.appendChild(el('label', { class: 'check', style: { 'margin-bottom': '10px' } }, [cb,
+        el('span', null, [el('strong', { text: 'Auf Meereshöhe umrechnen' }), ' – so wie im Wetterbericht. Ohne Haken wird der gemessene Druck am Standort angezeigt (in der Höhe niedriger).'])]));
+      if (w.qnh) body.appendChild(altitudeInfo(w));
     }
 
     if (w.type === 'gauge') {
@@ -283,6 +293,22 @@
     });
   }
 
+  /** Zeigt die Höhe der gewählten Station an – eingetragen wird sie auf der Stationen-Seite. */
+  function altitudeInfo(w) {
+    var st = stationById(w.station);
+    var link = el('a', { href: dashboardUrl + '/stationen', text: 'Stationen-Seite' });
+    if (st && st.altitude !== null && st.altitude !== undefined) {
+      return el('div', { class: 'alert alert-info small' }, [iconEl('mountain', 'icon'),
+        el('div', null, ['Höhe der Station „' + st.name + '“: ' + st.altitude + ' m – wird automatisch verwendet. Ändern auf der ', link, ' (Stift).'])]);
+    }
+    if (w.altitude) {
+      return el('div', { class: 'alert alert-info small' }, [iconEl('mountain', 'icon'),
+        el('div', null, ['Hier ist noch eine ältere Höhenangabe gespeichert (' + w.altitude + ' m). Besser: Höhe auf der ', link, ' bei der Station eintragen – dann gilt sie für alle Bausteine.'])]);
+    }
+    return el('div', { class: 'alert alert-warn small' }, [iconEl('triangle-alert', 'icon'),
+      el('div', null, ['Für diese Station ist keine Höhe eingetragen. Für ' + (w.model === 'zambretti' ? 'Zambretti ist sie wichtig' : 'die Anzeige auf Meereshöhe wird sie gebraucht') + ' – bitte auf der ', link, ' (Stift bei der Station) eintragen.'])]);
+  }
+
   function buildForecastFields(body, w, upd, titleSpan) {
     var F = window.EWForecast;
     var models = F ? F.MODELS : { pressure: { name: 'Drucktendenz', needs: 'Luftdruck' } };
@@ -317,8 +343,7 @@
     body.appendChild(grid);
 
     if (w.model === 'pressure' || w.model === 'zambretti') {
-      body.appendChild(field('Höhe der Station über dem Meer (m)', numInput(w.altitude, function (v) { w.altitude = Math.round(v); changed(); }),
-        'Wichtig für Zambretti: Der Druck wird damit auf Meereshöhe umgerechnet. Stuttgart ca. 250 m, Schwäbische Alb ca. 700 m – genau: Höhe in einer Karten-App nachschauen.'));
+      body.appendChild(altitudeInfo(w));
     }
     if (w.model === 'trend') {
       body.appendChild(el('div', { class: 'form-grid' }, [

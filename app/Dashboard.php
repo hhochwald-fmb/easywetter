@@ -136,6 +136,7 @@ final class Dashboard
                 'sensor2' => $sensor2,
                 'altitude' => (int) max(-500, min(9000, (int) self::num($w['altitude'] ?? 0, 0))),
                 'horizon' => in_array((int) ($w['horizon'] ?? 1), [1, 2, 3], true) ? (int) ($w['horizon'] ?? 1) : 1,
+                'qnh' => !empty($w['qnh']),
             ];
         }
         return $out;
@@ -144,7 +145,7 @@ final class Dashboard
     /** Stationen der Gruppe inkl. letzter Werte je Sensor. */
     public static function stations(int $groupId): array
     {
-        $stations = Db::all('SELECT id, name, last_seen_at FROM stations WHERE group_id = ? ORDER BY id', [$groupId]);
+        $stations = Db::all('SELECT id, name, altitude, last_seen_at FROM stations WHERE group_id = ? ORDER BY id', [$groupId]);
         $out = [];
         foreach ($stations as $s) {
             $latest = [];
@@ -164,6 +165,7 @@ final class Dashboard
                 'id' => (int) $s['id'],
                 'name' => $s['name'],
                 'last_seen' => utc_to_ts($s['last_seen_at']),
+                'altitude' => $s['altitude'] === null ? null : (int) $s['altitude'],
                 'latest' => (object) $latest,
             ];
         }

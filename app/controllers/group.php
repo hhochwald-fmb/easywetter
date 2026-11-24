@@ -125,7 +125,12 @@ function station_create(int $groupId): never
         redirect('/gruppen/' . $groupId . '/stationen');
     }
     [$token, $hash, $hint] = new_station_token();
-    $sid = Db::insert('INSERT INTO stations (group_id, name, token_hash, token_hint) VALUES (?, ?, ?, ?)', [$groupId, $name, $hash, $hint]);
+    $alt = post_altitude();
+    if ($alt === false) {
+        flash('error', 'Die Höhe bitte als ganze Zahl in Metern angeben (z. B. 250).');
+        redirect('/gruppen/' . $groupId . '/stationen');
+    }
+    $sid = Db::insert('INSERT INTO stations (group_id, name, altitude, token_hash, token_hint) VALUES (?, ?, ?, ?, ?)', [$groupId, $name, $alt, $hash, $hint]);
     stash('new_token', ['station_id' => $sid, 'station' => $name, 'token' => $token]);
     flash('success', 'Station „' . $name . '“ angelegt.');
     redirect('/gruppen/' . $groupId . '/stationen');
@@ -141,13 +146,31 @@ function station_token(int $id): never
     redirect('/gruppen/' . $s['group_id'] . '/stationen');
 }
 
+/** Höhe aus dem Formular: leer = unbekannt (NULL), sonst ganze Meter. */
+function post_altitude(): int|false|null
+{
+    $raw = str_replace([' ', 'm'], '', post('altitude'));
+    if ($raw === '') {
+        return null;
+    }
+    if (!preg_match('/^-?\d{1,4}$/', $raw) || (int) $raw < -500 || (int) $raw > 9000) {
+        return false;
+    }
+    return (int) $raw;
+}
+
 function station_rename(int $id): never
 {
     [, $s] = station_context($id);
     $name = str_limit(post('name'), 80);
+    $alt = post_altitude();
+    if ($alt === false) {
+        flash('error', 'Die Höhe bitte als ganze Zahl in Metern angeben (z. B. 250).');
+        redirect('/gruppen/' . $s['group_id'] . '/stationen');
+    }
     if ($name !== '') {
-        Db::run('UPDATE stations SET name = ? WHERE id = ?', [$name, $id]);
-        flash('success', 'Station umbenannt.');
+        Db::run('UPDATE stations SET name = ?, altitude = ? WHERE id = ?', [$name, $alt, $id]);
+        flash('success', 'Station gespeichert.');
     }
     redirect('/gruppen/' . $s['group_id'] . '/stationen');
 }

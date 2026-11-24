@@ -82,6 +82,22 @@
     return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + a + ')';
   }
 
+  /** Stationshöhe: Einstellung der Station hat Vorrang, alte Baustein-Einstellung als Rückfall. */
+  function stationAltitude(st, w) {
+    if (st && st.altitude !== null && st.altitude !== undefined) return st.altitude;
+    return w && w.altitude ? w.altitude : null;
+  }
+
+  /** Luftdruck auf Meereshöhe umrechnen, falls im Baustein gewünscht und die Höhe bekannt ist. */
+  function qnhInfo(w, st) {
+    if (!w.qnh || w.type === 'forecast' || w.type === 'text' || w.type === 'status') return null;
+    var alt = stationAltitude(st, w);
+    var F = window.EWForecast;
+    if (!alt || !F) return { missing: true };
+    var temp = st && st.latest && st.latest.temp ? st.latest.temp.v : null;
+    return { alt: alt, conv: function (p) { return F.seaLevel(p, alt, temp); } };
+  }
+
   function seriesKey(w) { return w.station + ':' + w.sensor + ':' + (w.type === 'forecast' ? '6h' : w.range); }
   function needsSeries(w) { return w.type === 'chart' || w.type === 'minmax' || (w.type === 'forecast' && w.model !== 'dewpoint'); }
 
@@ -112,7 +128,7 @@
       label: type === 'text' ? 'Notiz' : (type === 'status' ? 'Unsere Stationen' : p.label),
       unit: p.unit, color: p.color, icon: type === 'text' ? 'sticky-note' : p.icon,
       min: p.min, max: p.max, decimals: 1, range: '24h',
-      size: type === 'chart' ? 'm' : 's', style: 'area',
+      size: type === 'chart' ? 'm' : 's', style: 'area', qnh: sensor === 'press',
       text: type === 'text' ? 'Hier könnt ihr etwas über eure Station schreiben.' : ''
     };
   }
@@ -238,6 +254,9 @@
   Renderer.prototype.widget = function (w, st, data, multi, now) {
     var card = el('div', { class: 'w w-' + (w.size || 's'), 'data-type': w.type });
     var latest = st && st.latest ? st.latest[w.sensor] : null;
+    var qnh = st ? qnhInfo(w, st) : null;
+    if (latest && qnh && qnh.conv) latest = { v: qnh.conv(latest.v), t: latest.t };
+    var qnhNote = qnh ? (qnh.conv ? 'auf Meereshöhe (' + qnh.alt + ' m)' : '⚠ Stationshöhe fehlt – Messwert ohne Umrechnung') : '';
     var unit = w.unit;
     var self = this;
 
@@ -276,7 +295,8 @@
         el('small', { text: unit })
       ]));
       card.appendChild(el('div', { class: 'w-foot' }, [
-        el('span', { text: latest ? ago(latest.t, now) : 'noch keine Daten für „' + w.sensor + '“' })
+        el('span', { text: latest ? ago(latest.t, now) : 'noch keine Daten für „' + w.sensor + '“' }),
+        qnhNote ? el('span', { text: qnhNote }) : null
       ]));
       card.appendChild(el('div', { class: 'w-bg-icon', style: { color: w.color } }, [iconEl(w.icon)]));
       return card;
@@ -303,11 +323,14 @@
         el('div', { class: 'g-val' }, [fmt(v, w.decimals), el('small', { text: ' ' + unit })]),
         el('div', { class: 'g-range' }, [el('span', { text: fmt(w.min, 0) }), el('span', { text: fmt(w.max, 0) })])
       ]));
-      card.appendChild(el('div', { class: 'w-foot' }, [el('span', { text: latest ? ago(latest.t, now) : 'noch keine Daten' })]));
+      card.appendChild(el('div', { class: 'w-foot' }, [el('span', { text: latest ? ago(latest.t, now) : 'noch keine Daten' }), qnhNote ? el('span', { text: qnhNote }) : null]));
       return card;
     }
 
     var series = (data.series || {})[seriesKey(w)] || [];
+    if (qnh && qnh.conv && w.type !== 'forecast') {
+      series = series.map(function (p) { return [p[0], qnh.conv(p[1]), qnh.conv(p[2]), qnh.conv(p[3])]; });
+    }
 
     if (w.type === 'forecast') {
       return this.forecast(card, w, st, series, now);
@@ -327,14 +350,14 @@
       card.appendChild(el('div', { class: 'w-minmax' }, [
         cell('Min', mn, '#3b82f6'), cell('Mittel', avg, w.color), cell('Max', mx, '#ef4444')
       ]));
-      card.appendChild(el('div', { class: 'w-foot' }, [el('span', { text: 'letzte ' + RANGE_NAMES[w.range] }), el('span', { text: unit })]));
+      card.appendChild(el('div', { class: 'w-foot' }, [el('span', { text: 'letzte ' + RANGE_NAMES[w.range] + (qnhNote ? ' · ' + qnhNote : '') }), el('span', { text: unit })]));
       return card;
     }
 
     // Verlauf (Chart.js)
     var box = el('div', { class: 'w-chart' });
     card.appendChild(box);
-    card.appendChild(el('div', { class: 'w-foot' }, [el('span', { text: 'letzte ' + RANGE_NAMES[w.range] }), el('span', { text: latest ? 'aktuell ' + fmt(latest.v, w.decimals) + ' ' + unit : '' })]));
+    card.appendChild(el('div', { class: 'w-foot' }, [el('span', { text: 'letzte ' + RANGE_NAMES[w.range] + (qnhNote ? ' · ' + qnhNote : '') }), el('span', { text: latest ? 'aktuell ' + fmt(latest.v, w.decimals) + ' ' + unit : '' })]));
     if (!series.length) {
       box.appendChild(el('div', { class: 'w-empty', text: 'Für diesen Zeitraum gibt es noch keine Messwerte.' }));
       return card;
@@ -352,7 +375,7 @@
     if (!F) return card;
     var latest = st.latest || {};
     var r = F.run(w.model, {
-      series: series, now: now, altitude: w.altitude, horizon: w.horizon,
+      series: series, now: now, altitude: stationAltitude(st, w), horizon: w.horizon,
       temp: latest.temp ? latest.temp.v : null,
       latestT: latest[w.sensor] || null, latestH: latest[w.sensor2] || null,
       label: preset(w.sensor).label, unit: w.unit, decimals: w.decimals,
