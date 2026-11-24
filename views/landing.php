@@ -85,8 +85,8 @@
     <div class="container">
         <div class="cta">
             <h2>Bereit für die erste Messung?</h2>
-            <p>Anleitung lesen, Bibliothek herunterladen und loslegen.</p>
-            <div class="row" style="justify-content:center"><a class="btn btn-lg" href="<?= e(url('/anleitung')) ?>"><?= icon('book-open') ?> Zur Anleitung</a></div>
+            <p>Anleitung lesen, Bibliothek herunterladen und loslegen – oder EasyWetter auf dem eigenen Schulserver betreiben.</p>
+            <div class="row" style="justify-content:center"><a class="btn btn-lg" href="<?= e(url('/anleitung')) ?>"><?= icon('book-open') ?> Zur Anleitung</a><a class="btn btn-lg" href="<?= e(url('/selbst-installieren')) ?>"><?= icon('server') ?> Selbst installieren</a></div>
         </div>
     </div>
 </section>

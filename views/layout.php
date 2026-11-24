@@ -52,7 +52,7 @@ require __DIR__ . '/partials/head.php';
     </div>
 </main>
 <footer class="footer no-print">
-    <div class="container"><div>EasyWetter <?= e(EW_VERSION) ?></div><div class="row"><a href="<?= e(url('/impressum')) ?>">Impressum</a><a href="<?= e(url('/datenschutz')) ?>">Datenschutz</a></div></div>
+    <div class="container"><div>EasyWetter <?= e(EW_VERSION) ?></div><div class="row"><a href="<?= e(url('/selbst-installieren')) ?>">Selbst installieren</a><a href="<?= e(url('/impressum')) ?>">Impressum</a><a href="<?= e(url('/datenschutz')) ?>">Datenschutz</a></div></div>
 </footer>
 <?php require __DIR__ . '/partials/scripts.php'; ?>
 </body>

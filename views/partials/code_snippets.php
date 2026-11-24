@@ -20,6 +20,8 @@ void loop() {
   float temperatur = 21.5;   // hier euren Sensor auslesen
   float feuchte    = 48.0;
 
+  // "temp" und "hum" sind die Messwert-Namen – unter diesen Namen
+  // erscheinen die Werte im Dashboard. Die Variablennamen sind egal.
   EasyWetter.add("temp", temperatur);
   EasyWetter.add("hum", feuchte);
   EasyWetter.send();         // schickt alle Werte auf einmal
@@ -44,6 +46,8 @@ while True:
     temperatur = 21.5   # hier euren Sensor auslesen
     feuchte = 48.0
 
+    # "temp" und "hum" sind die Messwert-Namen – unter diesen Namen
+    # erscheinen die Werte im Dashboard. Die Variablennamen sind egal.
     station.add("temp", temperatur)
     station.add("hum", feuchte)
     station.send()      # schickt alle Werte auf einmal
@@ -51,7 +55,12 @@ while True:
     time.sleep(60)      # jede Minute
 PY;
 $curl = "curl -X POST \"{$uploadUrl}\" \\\n  -H \"Content-Type: application/json\" \\\n  -H \"X-Station-Token: {$tok}\" \\\n  -d '{\"temp\": 21.5, \"hum\": 48}'";
+$host = strtolower((string) parse_url($uploadUrl, PHP_URL_HOST));
+$isLocal = in_array($host, ['localhost', '127.0.0.1', '::1', '[::1]'], true);
 ?>
+<?php if ($isLocal): ?>
+<div class="alert alert-warn"><?= icon('triangle-alert') ?><div><strong>Achtung, lokale Testumgebung:</strong> Ein ESP32 erreicht „<?= e($host) ?>“ nicht – für ihn ist das er selbst. Ersetze im SERVER „<?= e($host) ?>“ durch die Netzwerk-Adresse dieses Computers (z. B. <code>192.168.1.20</code>, zu finden in den Netzwerk-Einstellungen). ESP und Computer müssen im selben WLAN sein.</div></div>
+<?php endif; ?>
 <div data-tabs>
     <div class="tabs" role="tablist">
         <button type="button" class="active" data-tab="<?= $uid ?>-a"><?= icon('cpu') ?> Arduino / C++</button>

@@ -23,7 +23,7 @@ require __DIR__ . '/partials/head.php';
 <footer class="footer">
     <div class="container">
         <div>EasyWetter <?= e(EW_VERSION) ?> · Wetterstationen im Unterricht</div>
-        <div class="row"><a href="<?= e(url('/anleitung')) ?>">Anleitung</a><a href="<?= e(url('/impressum')) ?>">Impressum</a><a href="<?= e(url('/datenschutz')) ?>">Datenschutz</a></div>
+        <div class="row"><a href="<?= e(url('/anleitung')) ?>">Anleitung</a><a href="<?= e(url('/selbst-installieren')) ?>">Selbst installieren</a><a href="<?= e(url('/impressum')) ?>">Impressum</a><a href="<?= e(url('/datenschutz')) ?>">Datenschutz</a></div>
     </div>
 </footer>
 <?php require __DIR__ . '/partials/scripts.php'; ?>

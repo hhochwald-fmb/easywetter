@@ -1,0 +1,27 @@
+EasyWetter – MicroPython
+========================
+
+Für Raspberry Pi Pico W, ESP32 und ESP8266 mit MicroPython.
+
+Dateien
+-------
+easywetter.py   Die Bibliothek. Unter GENAU diesem Namen auf den Mikrocontroller speichern.
+main.py         Beispiel ohne Sensor (Testwerte) – zum Ausprobieren.
+main_dht22.py   Beispiel mit DHT22-Sensor (Temperatur + Luftfeuchte).
+
+So geht's (mit Thonny)
+----------------------
+1. MicroPython auf den Mikrocontroller spielen (Thonny: Werkzeuge → Optionen → Interpreter).
+2. easywetter.py öffnen → Datei → Speichern unter → "MicroPython-Gerät" → Name: easywetter.py
+3. main.py (oder main_dht22.py) öffnen, WLAN-Name, WLAN-Passwort, SERVER und TOKEN eintragen.
+   SERVER und TOKEN findet ihr auf der Stationen-Seite eurer Gruppe.
+4. Als "main.py" auf den Mikrocontroller speichern – das Programm startet dann bei jedem Einschalten.
+5. Im Dashboard erscheinen die Werte nach etwa einer Minute.
+
+Messwerte senden
+----------------
+    station.add("temp", 21.5)     # Name: a-z, 0-9, _  (max. 32 Zeichen)
+    station.add("hum", 48)
+    station.send()                # schickt alle Werte auf einmal, gibt 200 zurück wenn alles ok ist
+
+Bekannte Namen mit passendem Symbol im Dashboard: temp, hum, press, co2, light, uv, wind, rain, soil, pm25, noise

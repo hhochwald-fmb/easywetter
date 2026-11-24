@@ -17,6 +17,7 @@ require EW_ROOT . '/app/Migrator.php';
 require EW_ROOT . '/app/Dashboard.php';
 require EW_ROOT . '/app/Updater.php';
 require EW_ROOT . '/app/Mailer.php';
+require EW_ROOT . '/app/Downloads.php';
 
 date_default_timezone_set('Europe/Berlin');
 mb_internal_encoding('UTF-8');

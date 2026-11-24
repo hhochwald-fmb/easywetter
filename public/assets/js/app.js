@@ -82,6 +82,49 @@
     });
   });
 
+  // Popover (details.pop) fest im Fenster positionieren, damit Tabellen/Karten
+  // mit overflow es nicht abschneiden. Öffnet nach oben, wenn unten kein Platz ist.
+  function placePop(d) {
+    var body = d.querySelector('.pop-body');
+    var sum = d.querySelector('summary');
+    if (!body || !sum) return;
+    var vw = document.documentElement.clientWidth;
+    var vh = window.innerHeight;
+    body.style.position = 'fixed';
+    body.style.right = 'auto';
+    body.style.bottom = 'auto';
+    var w = Math.min(body.offsetWidth || 300, vw - 32);
+    body.style.width = w + 'px';
+    var r = sum.getBoundingClientRect();
+    var h = body.offsetHeight;
+    var left = Math.max(16, Math.min(r.right - w, vw - w - 16));
+    var top = r.bottom + 6;
+    if (top + h > vh - 16 && r.top - h - 6 > 16) top = r.top - h - 6;
+    top = Math.max(16, Math.min(top, vh - h - 16));
+    body.style.left = left + 'px';
+    body.style.top = top + 'px';
+    body.style.maxHeight = (vh - 32) + 'px';
+    body.style.overflowY = 'auto';
+  }
+
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (!d.matches || !d.matches('details.pop')) return;
+    if (d.open) {
+      // andere offene Popover schließen
+      document.querySelectorAll('details.pop[open]').forEach(function (o) { if (o !== d) o.removeAttribute('open'); });
+      placePop(d);
+      var first = d.querySelector('.pop-body input:not([type=hidden]), .pop-body select, .pop-body textarea');
+      if (first) first.focus();
+    }
+  }, true);
+
+  function repositionOpen() {
+    document.querySelectorAll('details.pop[open]').forEach(placePop);
+  }
+  window.addEventListener('resize', repositionOpen);
+  window.addEventListener('scroll', repositionOpen, true);
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       document.querySelectorAll('details.pop[open]').forEach(function (d) { d.removeAttribute('open'); });

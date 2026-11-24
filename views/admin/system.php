@@ -53,8 +53,8 @@
             <label class="check" style="margin-bottom:14px"><input type="checkbox" name="registration_open" value="1" <?= $registrationOpen ? 'checked' : '' ?>> Schulen dürfen sich selbst registrieren (mit Freigabe durch dich)</label>
             <div class="field"><label>E-Mail für Benachrichtigungen</label><input type="email" name="admin_email" value="<?= e($adminEmail) ?>">
                 <span class="hint"><?= $mailEnabled ? 'E-Mail-Versand ist aktiv.' : 'E-Mail-Versand ist aus – dafür in config/config.php „mail_from“ setzen.' ?></span></div>
-            <div class="field"><label>GitHub-Repository für Online-Updates</label><input type="text" name="update_repo" value="<?= e($repo) ?>" placeholder="besitzer/easywetter" <?= $repoFromConfig ? 'disabled' : '' ?>>
-                <span class="hint"><?= $repoFromConfig ? 'Wird in config/config.php festgelegt.' : 'Leer lassen, wenn nicht benötigt.' ?></span></div>
+            <div class="field"><label>GitHub-Repository für Online-Updates</label><input type="text" name="update_repo" value="<?= e((string) setting('update_repo', '')) ?>" placeholder="<?= e(Updater::DEFAULT_REPO) ?>" <?= $repoFromConfig ? 'disabled' : '' ?>>
+                <span class="hint"><?= $repoFromConfig ? 'Wird in config/config.php festgelegt.' : 'Leer lassen = offizielles Repository (' . e(Updater::DEFAULT_REPO) . '). Nur ändern, wenn du eine eigene Variante pflegst.' ?></span></div>
             <button class="btn btn-primary">Speichern</button>
         </form>
 

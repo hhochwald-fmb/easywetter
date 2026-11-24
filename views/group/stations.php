@@ -81,6 +81,7 @@ require __DIR__ . '/../partials/group_tabs.php';
             <li>Fertiges Programm kopieren, WLAN eintragen, hochladen</li>
             <li>Nach einer Minute erscheinen die Werte hier und im Dashboard</li>
         </ol>
+        <p class="small" style="margin-top:10px">Die Messwert-Namen (z. B. <code>"temp"</code> in <code>add("temp", …)</code>) legt ihr <strong>nur im Programm</strong> fest – im Dashboard muss nichts angelegt werden. Neue Namen tauchen nach dem ersten Senden automatisch auf. <a href="<?= e(url('/anleitung')) ?>">Mehr dazu</a></p>
         <p class="small muted" style="margin-top:10px">Server-Adresse: <code><?= e($uploadUrl) ?></code></p>
     </div>
 </div>

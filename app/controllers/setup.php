@@ -32,7 +32,18 @@ function setup_controller(string $method, bool $hasConfig): never
                 try {
                     Db::connect($db);
                 } catch (PDOException $e) {
-                    $errors[] = 'Verbindung fehlgeschlagen: ' . $e->getMessage();
+                    $msg = $e->getMessage();
+                    $hint = match (true) {
+                        str_contains($msg, '[1044]') => 'Benutzer und Passwort stimmen, aber der Benutzer hat keinen Zugriff auf diese Datenbank – meist ist der Datenbankname falsch. Bei manchen Hostern heißen Datenbank und Benutzer verschieden (z. B. Mittwald: Datenbank „mysql_…“, Benutzer „dbu_…“).',
+                        str_contains($msg, '[1045]') => 'Benutzername oder Passwort ist falsch.',
+                        str_contains($msg, '[1049]') => 'Eine Datenbank mit diesem Namen gibt es nicht – bitte im Kundenbereich des Hosters nachsehen bzw. anlegen.',
+                        str_contains($msg, '[2002]'), str_contains($msg, '[2005]') => 'Der Datenbank-Server ist unter dieser Adresse nicht erreichbar – bitte „Server“ und „Port“ prüfen.',
+                        default => '',
+                    };
+                    $errors[] = 'Verbindung fehlgeschlagen: ' . $msg;
+                    if ($hint !== '') {
+                        $errors[] = 'Tipp: ' . $hint;
+                    }
                 }
             }
             if (!$errors) {

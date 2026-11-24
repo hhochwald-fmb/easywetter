@@ -216,7 +216,7 @@
         var p = D.preset(v);
         w.sensor = v; w.label = p.label; w.unit = p.unit; w.icon = p.icon; w.color = p.color; w.min = p.min; w.max = p.max;
         changed(true);
-      }), '✓ = es gibt schon Messwerte'));
+      }), '✓ = hat schon Daten gesendet. Fehlt ein Name? Er erscheint automatisch, sobald eure Station ihn zum ersten Mal sendet (z. B. add("bodentemp", …)).'));
       body.appendChild(grid);
     }
 

@@ -42,6 +42,11 @@ $routes = [
     // Öffentlich
     ['GET', '/', 'page_landing'],
     ['GET', '/anleitung', 'page_guide'],
+    ['GET', '/selbst-installieren', 'page_selfhost'],
+    ['GET', '/download/easywetter\.zip', 'download_project'],
+    ['GET', '/download/EasyWetter-Arduino\.zip', 'download_arduino'],
+    ['GET', '/download/EasyWetter-MicroPython\.zip', 'download_micropython'],
+    ['GET', '/download/(easywetter\.py|main\.py|main_dht22\.py)', 'download_file'],
     ['GET', '/impressum', 'page_imprint'],
     ['GET', '/datenschutz', 'page_privacy'],
     ['GET', '/login', 'login_form'],
@@ -122,10 +127,8 @@ foreach ($routes as [$m, $pattern, $handler]) {
     if ($method === 'POST' && !$isDeviceApi) {
         verify_csrf();
     }
-    $args = array_map('intval', array_slice($matches, 1));
-    if ($handler === 'public_dashboard' || $handler === 'public_class') {
-        $args = array_slice($matches, 1);
-    }
+    // Zahlen als int, alles andere (z. B. Slugs, Dateinamen) als String übergeben
+    $args = array_map(fn($a) => ctype_digit($a) ? (int) $a : $a, array_slice($matches, 1));
     $handler(...$args);
     exit;
 }

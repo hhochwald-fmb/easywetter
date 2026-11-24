@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1
+- Einrichtungsassistent: verständliche Hinweise bei Datenbankfehlern (falscher Name, Passwort, Server)
+- Hinweisseite, falls die Weiterleitung nach public/ fehlt (.htaccess nicht hochgeladen)
+- Bearbeiten-Popover (Stift) wurde in Tabellen abgeschnitten – behoben
+- Browser laden geänderte CSS/JS-Dateien sofort neu (kein veralteter Cache mehr)
+- Anleitung: Messwert-Namen ausführlich erklärt, Download der MicroPython-Beispiele
+- Code-Vorlagen: Warnhinweis bei lokaler Testumgebung (localhost)
+- Online-Updates aus dem offiziellen GitHub-Repository hhochwald-fmb/easywetter ohne weitere Einstellung
+
 ## 2.0.0
 Kompletter Neubau.
 - PHP + MySQL statt JSON-Dateien, Passwörter und Stations-Tokens gehasht

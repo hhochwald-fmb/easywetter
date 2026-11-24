@@ -13,9 +13,13 @@ Technik: PHP ≥ 8.1, MySQL ≥ 5.7 / MariaDB ≥ 10.3, Apache mit `.htaccess` �
 
 ---
 
+## Download
+
+Jede EasyWetter-Installation bietet unter **/selbst-installieren** das komplette Programm in der installierten Version als ZIP an. Unter **/anleitung** gibt es die Arduino-Bibliothek (`EasyWetter-Arduino.zip`) und die MicroPython-Bibliothek mit Beispielen (`EasyWetter-MicroPython.zip`). Die Pakete werden automatisch aus den aktuellen Dateien erzeugt und enthalten nie Zugangsdaten, Konfiguration oder Messdaten.
+
 ## Installation auf Webhosting
 
-1. Release-ZIP herunterladen und entpacken (oder `git clone`).
+1. ZIP herunterladen (siehe oben) und entpacken – oder `git clone`.
 2. Alle Dateien per FTP in einen Ordner auf dem Webspace hochladen.
    Am besten den Document-Root der (Sub-)Domain auf den Ordner `public/` setzen. Falls das nicht geht, funktioniert es auch so – die `.htaccess` im Hauptordner leitet alles nach `public/` um und sperrt die internen Ordner.
 3. Beim Hoster eine leere MySQL-Datenbank anlegen.
@@ -27,7 +31,7 @@ Ordner, die der Webserver beschreiben können muss: `storage/` und (nur für den
 ## Installation mit Git (für Kolleginnen und Kollegen mit eigenem Server)
 
 ```bash
-git clone <repo-url> easywetter
+git clone https://github.com/hhochwald-fmb/easywetter.git easywetter
 cd easywetter
 # Seite im Browser öffnen und dem Assistenten folgen
 ```
@@ -38,7 +42,7 @@ cd easywetter
 |---|---|
 | Git | `php bin/update.php` (holt die neue Version und aktualisiert die Datenbank) |
 | Webhosting | Admin → *System & Updates* → Release-ZIP hochladen |
-| Webhosting, online | In *System & Updates* das GitHub-Repository eintragen (`besitzer/easywetter`) → „Nach Updates suchen“ → „Jetzt installieren“ |
+| Webhosting, online | Admin → *System & Updates* → „Nach Updates suchen“ → „Jetzt installieren“ (lädt das neueste Release von [GitHub](https://github.com/hhochwald-fmb/easywetter/releases)) |
 
 Bei jedem Update werden die Programmdateien vorher in `storage/backups/` gesichert. `config/` und `storage/` werden nie überschrieben. Datenbank-Änderungen (Dateien in `migrations/`) laufen automatisch beim ersten Seitenaufruf nach dem Update.
 
@@ -46,8 +50,10 @@ Bei jedem Update werden die Programmdateien vorher in `storage/backups/` gesiche
 
 1. Änderungen machen, Datenbank-Änderungen immer als **neue** Datei `migrations/00X_beschreibung.sql` (alte nie ändern).
 2. `VERSION` erhöhen, `CHANGELOG.md` ergänzen.
-3. `bin/build-release.sh` → erzeugt `dist/easywetter-<version>.zip` und aktualisiert die Downloads.
-4. Git-Tag `v<version>` setzen und bei GitHub ein Release mit der ZIP-Datei als Anhang anlegen.
+3. `bin/build-release.sh` → erzeugt `dist/easywetter-<version>.zip` (identisch mit dem Download auf der Seite).
+4. Commit, Git-Tag `v<version>` setzen, pushen und bei GitHub ein Release mit der ZIP-Datei als Anhang anlegen:
+   `gh release create v<version> dist/easywetter-<version>.zip --notes-file …`
+   Alle Installationen finden das Update dann über „Nach Updates suchen“.
 
 ## Lokale Entwicklung mit Docker
 
@@ -74,7 +80,20 @@ Content-Type: application/json
 - Antworten: `200` ok · `401` Token ungültig · `422` keine gültigen Werte · `429` zu schnell · `413` zu groß
 - `GET /api/v1/ping` (optional mit Token-Header) zum Testen der Verbindung
 
-Bibliotheken: `libraries/arduino/EasyWetter` (ESP32/ESP8266, keine Abhängigkeiten) und `libraries/micropython/easywetter.py`.
+## Bibliotheken für die Stationen
+
+| | Ordner | Inhalt |
+|---|---|---|
+| Arduino (ESP32/ESP8266) | `libraries/arduino/EasyWetter` | Bibliothek ohne Abhängigkeiten, Beispiele „Grundlagen“ und „BME280“ |
+| MicroPython (Pico W, ESP32) | `libraries/micropython` | `easywetter.py`, Beispiele `main.py` und `main_dht22.py`, `LIESMICH.txt` |
+
+```python
+from easywetter import EasyWetter
+station = EasyWetter(SERVER, TOKEN)
+station.connect_wifi(WLAN_NAME, WLAN_PASSWORT)
+station.add("temp", 21.5)
+station.send()
+```
 
 ## Ordnerstruktur
 

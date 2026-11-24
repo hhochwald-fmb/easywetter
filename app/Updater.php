@@ -15,6 +15,8 @@ final class Updater
         'VERSION', 'README.md', 'LICENSE', 'CHANGELOG.md', '.htaccess', 'docker-compose.yml', 'config/config.example.php',
         'config/.htaccess', 'storage/.htaccess'];
     private const MAX_ZIP = 40 * 1024 * 1024;
+    /** Offizielles Repository – wird genutzt, solange nichts anderes eingestellt ist. */
+    public const DEFAULT_REPO = 'hhochwald-fmb/easywetter';
     /** Kerndateien, die ein Paket enthalten muss (Datei => Text, der darin vorkommen muss). */
     private const REQUIRED = [
         'app/bootstrap.php' => 'EW_ROOT',
@@ -37,7 +39,7 @@ final class Updater
 
     public static function repo(): string
     {
-        $r = (string) config('update_repo', '') ?: (string) setting('update_repo', '');
+        $r = (string) config('update_repo', '') ?: (string) setting('update_repo', '') ?: self::DEFAULT_REPO;
         return preg_match('#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $r) ? $r : '';
     }
 

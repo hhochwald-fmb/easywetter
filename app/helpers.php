@@ -74,7 +74,10 @@ function absolute_url(string $path = '/'): string
 
 function asset(string $path): string
 {
-    return url('assets/' . ltrim($path, '/')) . '?v=' . rawurlencode(EW_VERSION);
+    // Änderungsdatum anhängen, damit Browser nach jeder Änderung die neue Datei laden
+    $file = EW_ROOT . '/public/assets/' . ltrim($path, '/');
+    $v = EW_VERSION . (is_file($file) ? '-' . filemtime($file) : '');
+    return url('assets/' . ltrim($path, '/')) . '?v=' . rawurlencode($v);
 }
 
 function redirect(string $path): never

@@ -244,3 +244,34 @@ function page_privacy(): never
     $text = (string) setting('privacy_text', '');
     view('legal', ['title' => 'Datenschutzerklärung', 'html' => simple_text($text !== '' ? $text : default_privacy_text())], 'layout_public');
 }
+
+// ---------- Selbst installieren & Downloads ----------
+
+function page_selfhost(): never
+{
+    view('selfhost', [
+        'title' => 'Selbst installieren',
+        'zipAvailable' => Downloads::available(),
+        'repo' => Updater::repo(),
+    ], 'layout_public');
+}
+
+function download_project(): never
+{
+    Downloads::send('project', Downloads::projectFilename());
+}
+
+function download_arduino(): never
+{
+    Downloads::send('arduino', 'EasyWetter-Arduino.zip');
+}
+
+function download_micropython(): never
+{
+    Downloads::send('micropython', 'EasyWetter-MicroPython.zip');
+}
+
+function download_file(string $name): never
+{
+    Downloads::sendFile($name);
+}
