@@ -1,0 +1,47 @@
+# Lokale Testumgebung:  docker compose up -d
+#   Seite:       http://localhost:8090
+#   phpMyAdmin:  http://localhost:8091
+name: easywetter
+services:
+  app:
+    build: ./docker
+    ports:
+      - "8090:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      EW_DB_HOST: db
+      EW_DB_NAME: easywetter
+      EW_DB_USER: easywetter
+      EW_DB_PASS: easywetter
+      EW_DEBUG: "1"
+      EW_INGEST_MIN_INTERVAL: "2"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: easywetter
+      MYSQL_USER: easywetter
+      MYSQL_PASSWORD: easywetter
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    ports:
+      - "8091:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - db
+volumes:
+  dbdata:

@@ -1,0 +1,11 @@
+/config/config.php
+/storage/*
+!/storage/.htaccess
+!/storage/logs/
+!/storage/tmp/
+/storage/logs/*
+/storage/tmp/*
+!/storage/logs/.gitkeep
+!/storage/tmp/.gitkeep
+/dist/
+.DS_Store

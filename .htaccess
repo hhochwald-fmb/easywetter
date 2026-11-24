@@ -1,0 +1,14 @@
+# EasyWetter – leitet alle Anfragen in den Ordner public/ weiter.
+# (Besser: Document-Root des Webspaces direkt auf public/ setzen, falls der Hoster das erlaubt.)
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Interne Ordner und Dateien sperren
+    RewriteRule ^(app|config|migrations|views|storage|bin|docker|libraries)(/|$) - [F,L]
+    RewriteRule ^(VERSION|README\.md|CHANGELOG\.md|docker-compose\.yml|\.git.*|\.env.*)$ - [F,L]
+    # Alles andere nach public/
+    RewriteCond %{REQUEST_URI} !/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
